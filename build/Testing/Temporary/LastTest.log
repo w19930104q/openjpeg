@@ -1,0 +1,216 @@
+Start testing: Nov 24 01:04 CST
+----------------------------------------------------------
+504/1588 Testing: NR-small_world_non_consecutive_tilepart_tlm.jp2-dump
+504/1588 Test: NR-small_world_non_consecutive_tilepart_tlm.jp2-dump
+Command: "/home/liiing/feedback/uid36840/build/bin/opj_dump" "-i" "/tmp/openjpeg-data/input/nonregression/small_world_non_consecutive_tilepart_tlm.jp2" "-o" "/home/liiing/feedback/uid36840/build/tests/nonregression/Temporary/small_world_non_consecutive_tilepart_tlm.jp2.txt" "-v"
+Directory: /home/liiing/feedback/uid36840/build/tests/nonregression
+"NR-small_world_non_consecutive_tilepart_tlm.jp2-dump" start time: Nov 24 01:04 CST
+Output:
+----------------------------------------------------------
+
+[INFO] Start to read j2k main header (2443).
+[INFO] Main header has been correctly decoded.
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"NR-small_world_non_consecutive_tilepart_tlm.jp2-dump" end time: Nov 24 01:04 CST
+"NR-small_world_non_consecutive_tilepart_tlm.jp2-dump" time elapsed: 00:00:00
+----------------------------------------------------------
+
+505/1588 Testing: NR-small_world_non_consecutive_tilepart_tlm.jp2-compare_dump2base
+505/1588 Test: NR-small_world_non_consecutive_tilepart_tlm.jp2-compare_dump2base
+Command: "/home/liiing/feedback/uid36840/build/bin/compare_dump_files" "-b" "/tmp/openjpeg-data/baseline/nonregression/opj_v2_small_world_non_consecutive_tilepart_tlm.txt" "-t" "/home/liiing/feedback/uid36840/build/tests/nonregression/Temporary/small_world_non_consecutive_tilepart_tlm.jp2.txt"
+Directory: /home/liiing/feedback/uid36840/build/tests/nonregression
+"NR-small_world_non_consecutive_tilepart_tlm.jp2-compare_dump2base" start time: Nov 24 01:04 CST
+Output:
+----------------------------------------------------------
+******Parameters********* 
+ base_filename = /tmp/openjpeg-data/baseline/nonregression/opj_v2_small_world_non_consecutive_tilepart_tlm.txt
+ test_filename = /home/liiing/feedback/uid36840/build/tests/nonregression/Temporary/small_world_non_consecutive_tilepart_tlm.jp2.txt
+************************* 
+Try to open: /tmp/openjpeg-data/baseline/nonregression/opj_v2_small_world_non_consecutive_tilepart_tlm.txt for reading ... Ok.
+Try to open: /home/liiing/feedback/uid36840/build/tests/nonregression/Temporary/small_world_non_consecutive_tilepart_tlm.jp2.txt for reading ... Ok.
+
+***** TEST SUCCEED: Files are the same. *****
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"NR-small_world_non_consecutive_tilepart_tlm.jp2-compare_dump2base" end time: Nov 24 01:04 CST
+"NR-small_world_non_consecutive_tilepart_tlm.jp2-compare_dump2base" time elapsed: 00:00:00
+----------------------------------------------------------
+
+1576/1588 Testing: NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-316-decode
+1576/1588 Test: NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-316-decode
+Command: "/home/liiing/feedback/uid36840/build/bin/opj_decompress" "-t" "0" "-i" "/tmp/openjpeg-data/input/nonregression/small_world_non_consecutive_tilepart_tlm.jp2" "-o" "/home/liiing/feedback/uid36840/build/tests/nonregression/Temporary/small_world_non_consecutive_tilepart_tlm-t0.png"
+Directory: /home/liiing/feedback/uid36840/build/tests/nonregression
+"NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-316-decode" start time: Nov 24 01:04 CST
+Output:
+----------------------------------------------------------
+
+[INFO] Start to read j2k main header (2443).
+[INFO] Main header has been correctly decoded.
+[WARNING] JP2 box which are after the codestream will not be read by this function.
+[INFO] Header of tile 1 / 2 has been read.
+[INFO] Tile 1/2 has been decoded.
+[INFO] Image data has been updated with tile 1.
+
+tile 0 is decoded!
+
+[INFO] Generated Outfile /home/liiing/feedback/uid36840/build/tests/nonregression/Temporary/small_world_non_consecutive_tilepart_tlm-t0.png
+decode time: 5 ms
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-316-decode" end time: Nov 24 01:04 CST
+"NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-316-decode" time elapsed: 00:00:00
+----------------------------------------------------------
+
+1577/1588 Testing: NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-316-decode-md5
+1577/1588 Test: NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-316-decode-md5
+Command: "/home/liiing/.local/lib/python3.14/site-packages/cmake/data/bin/cmake" "-DREFFILE:STRING=/home/liiing/feedback/uid36840/tests/nonregression/md5refs.txt" "-DOUTFILENAME:STRING=/home/liiing/feedback/uid36840/build/tests/nonregression/Temporary/small_world_non_consecutive_tilepart_tlm-t0.png" "-P" "/home/liiing/feedback/uid36840/tests/nonregression/checkmd5refs.cmake"
+Directory: /home/liiing/feedback/uid36840/build/tests/nonregression
+"NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-316-decode-md5" start time: Nov 24 01:04 CST
+Output:
+----------------------------------------------------------
+-- equal: [922d2a15b57d7f0e628d00cf17e1d25d  small_world_non_consecutive_tilepart_tlm-t0-d.png] vs [922d2a15b57d7f0e628d00cf17e1d25d  small_world_non_consecutive_tilepart_tlm-t0-d.png]
+-- equal: [922d2a15b57d7f0e628d00cf17e1d25d  small_world_non_consecutive_tilepart_tlm-t0.png] vs [922d2a15b57d7f0e628d00cf17e1d25d  small_world_non_consecutive_tilepart_tlm-t0.png]
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-316-decode-md5" end time: Nov 24 01:04 CST
+"NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-316-decode-md5" time elapsed: 00:00:00
+----------------------------------------------------------
+
+1578/1588 Testing: NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-317-decode
+1578/1588 Test: NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-317-decode
+Command: "/home/liiing/feedback/uid36840/build/bin/opj_decompress" "-t" "1" "-i" "/tmp/openjpeg-data/input/nonregression/small_world_non_consecutive_tilepart_tlm.jp2" "-o" "/home/liiing/feedback/uid36840/build/tests/nonregression/Temporary/small_world_non_consecutive_tilepart_tlm-t1.png"
+Directory: /home/liiing/feedback/uid36840/build/tests/nonregression
+"NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-317-decode" start time: Nov 24 01:04 CST
+Output:
+----------------------------------------------------------
+
+[INFO] Start to read j2k main header (2443).
+[INFO] Main header has been correctly decoded.
+[WARNING] JP2 box which are after the codestream will not be read by this function.
+[INFO] Header of tile 2 / 2 has been read.
+[INFO] Tile 2/2 has been decoded.
+[INFO] Image data has been updated with tile 2.
+
+tile 1 is decoded!
+
+[INFO] Generated Outfile /home/liiing/feedback/uid36840/build/tests/nonregression/Temporary/small_world_non_consecutive_tilepart_tlm-t1.png
+decode time: 2 ms
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-317-decode" end time: Nov 24 01:04 CST
+"NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-317-decode" time elapsed: 00:00:00
+----------------------------------------------------------
+
+1579/1588 Testing: NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-317-decode-md5
+1579/1588 Test: NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-317-decode-md5
+Command: "/home/liiing/.local/lib/python3.14/site-packages/cmake/data/bin/cmake" "-DREFFILE:STRING=/home/liiing/feedback/uid36840/tests/nonregression/md5refs.txt" "-DOUTFILENAME:STRING=/home/liiing/feedback/uid36840/build/tests/nonregression/Temporary/small_world_non_consecutive_tilepart_tlm-t1.png" "-P" "/home/liiing/feedback/uid36840/tests/nonregression/checkmd5refs.cmake"
+Directory: /home/liiing/feedback/uid36840/build/tests/nonregression
+"NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-317-decode-md5" start time: Nov 24 01:04 CST
+Output:
+----------------------------------------------------------
+-- equal: [e3294b452af3ad2bf27146e04e8856dc  small_world_non_consecutive_tilepart_tlm-t1-d.png] vs [e3294b452af3ad2bf27146e04e8856dc  small_world_non_consecutive_tilepart_tlm-t1-d.png]
+-- equal: [e3294b452af3ad2bf27146e04e8856dc  small_world_non_consecutive_tilepart_tlm-t1.png] vs [e3294b452af3ad2bf27146e04e8856dc  small_world_non_consecutive_tilepart_tlm-t1.png]
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-317-decode-md5" end time: Nov 24 01:04 CST
+"NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-317-decode-md5" time elapsed: 00:00:00
+----------------------------------------------------------
+
+1580/1588 Testing: NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-318-decode
+1580/1588 Test: NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-318-decode
+Command: "/home/liiing/feedback/uid36840/build/bin/opj_decompress" "-i" "/tmp/openjpeg-data/input/nonregression/small_world_non_consecutive_tilepart_tlm.jp2" "-o" "/home/liiing/feedback/uid36840/build/tests/nonregression/Temporary/small_world_non_consecutive_tilepart_tlm-t0-d.png" "-d" "0,0,256,200"
+Directory: /home/liiing/feedback/uid36840/build/tests/nonregression
+"NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-318-decode" start time: Nov 24 01:04 CST
+Output:
+----------------------------------------------------------
+
+[INFO] Start to read j2k main header (2443).
+[INFO] Main header has been correctly decoded.
+[INFO] Setting decoding area to 0,0,256,200
+[INFO] Header of tile 1 / 2 has been read.
+[INFO] Tile 1/2 has been decoded.
+[INFO] Image data has been updated with tile 1.
+
+[INFO] Stream reached its end !
+[INFO] Generated Outfile /home/liiing/feedback/uid36840/build/tests/nonregression/Temporary/small_world_non_consecutive_tilepart_tlm-t0-d.png
+decode time: 4 ms
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-318-decode" end time: Nov 24 01:04 CST
+"NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-318-decode" time elapsed: 00:00:00
+----------------------------------------------------------
+
+1581/1588 Testing: NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-318-decode-md5
+1581/1588 Test: NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-318-decode-md5
+Command: "/home/liiing/.local/lib/python3.14/site-packages/cmake/data/bin/cmake" "-DREFFILE:STRING=/home/liiing/feedback/uid36840/tests/nonregression/md5refs.txt" "-DOUTFILENAME:STRING=/home/liiing/feedback/uid36840/build/tests/nonregression/Temporary/small_world_non_consecutive_tilepart_tlm-t0-d.png" "-P" "/home/liiing/feedback/uid36840/tests/nonregression/checkmd5refs.cmake"
+Directory: /home/liiing/feedback/uid36840/build/tests/nonregression
+"NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-318-decode-md5" start time: Nov 24 01:04 CST
+Output:
+----------------------------------------------------------
+-- equal: [922d2a15b57d7f0e628d00cf17e1d25d  small_world_non_consecutive_tilepart_tlm-t0-d.png] vs [922d2a15b57d7f0e628d00cf17e1d25d  small_world_non_consecutive_tilepart_tlm-t0-d.png]
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-318-decode-md5" end time: Nov 24 01:04 CST
+"NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-318-decode-md5" time elapsed: 00:00:00
+----------------------------------------------------------
+
+1582/1588 Testing: NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-319-decode
+1582/1588 Test: NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-319-decode
+Command: "/home/liiing/feedback/uid36840/build/bin/opj_decompress" "-i" "/tmp/openjpeg-data/input/nonregression/small_world_non_consecutive_tilepart_tlm.jp2" "-o" "/home/liiing/feedback/uid36840/build/tests/nonregression/Temporary/small_world_non_consecutive_tilepart_tlm-t1-d.png" "-d" "256,0,400,200"
+Directory: /home/liiing/feedback/uid36840/build/tests/nonregression
+"NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-319-decode" start time: Nov 24 01:04 CST
+Output:
+----------------------------------------------------------
+
+[INFO] Start to read j2k main header (2443).
+[INFO] Main header has been correctly decoded.
+[INFO] Setting decoding area to 256,0,400,200
+[INFO] Header of tile 2 / 2 has been read.
+[INFO] Tile 2/2 has been decoded.
+[INFO] Image data has been updated with tile 2.
+
+[INFO] Stream reached its end !
+[INFO] Generated Outfile /home/liiing/feedback/uid36840/build/tests/nonregression/Temporary/small_world_non_consecutive_tilepart_tlm-t1-d.png
+decode time: 2 ms
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-319-decode" end time: Nov 24 01:04 CST
+"NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-319-decode" time elapsed: 00:00:00
+----------------------------------------------------------
+
+1583/1588 Testing: NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-319-decode-md5
+1583/1588 Test: NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-319-decode-md5
+Command: "/home/liiing/.local/lib/python3.14/site-packages/cmake/data/bin/cmake" "-DREFFILE:STRING=/home/liiing/feedback/uid36840/tests/nonregression/md5refs.txt" "-DOUTFILENAME:STRING=/home/liiing/feedback/uid36840/build/tests/nonregression/Temporary/small_world_non_consecutive_tilepart_tlm-t1-d.png" "-P" "/home/liiing/feedback/uid36840/tests/nonregression/checkmd5refs.cmake"
+Directory: /home/liiing/feedback/uid36840/build/tests/nonregression
+"NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-319-decode-md5" start time: Nov 24 01:04 CST
+Output:
+----------------------------------------------------------
+-- equal: [e3294b452af3ad2bf27146e04e8856dc  small_world_non_consecutive_tilepart_tlm-t1-d.png] vs [e3294b452af3ad2bf27146e04e8856dc  small_world_non_consecutive_tilepart_tlm-t1-d.png]
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-319-decode-md5" end time: Nov 24 01:04 CST
+"NR-DEC-small_world_non_consecutive_tilepart_tlm.jp2-319-decode-md5" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Nov 24 01:04 CST

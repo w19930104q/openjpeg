@@ -4275,21 +4275,15 @@ static OPJ_BOOL opj_j2k_write_tlm(opj_j2k_t *p_j2k,
     OPJ_BYTE * l_current_data = 00;
     OPJ_UINT32 l_tlm_size;
     OPJ_UINT32 size_per_tile_part;
+    OPJ_UINT32 l_max_tile_parts_per_tlm;
+    OPJ_UINT32 l_num_tlm_markers;
+    OPJ_UINT32 l_num_tile_parts_left;
+    OPJ_UINT32 i;
 
     /* preconditions */
     assert(p_j2k != 00);
     assert(p_manager != 00);
     assert(p_stream != 00);
-
-    /* 10921 = (65535 - header_size) / size_per_tile_part where */
-    /* header_size = 4 and size_per_tile_part = 6 */
-    if (p_j2k->m_specific_param.m_encoder.m_total_tile_parts > 10921) {
-        /* We could do more but it would require writing several TLM markers */
-        opj_event_msg(p_manager, EVT_ERROR,
-                      "A maximum of 10921 tile-parts are supported currently "
-                      "when writing TLM marker\n");
-        return OPJ_FALSE;
-    }
 
     if (p_j2k->m_specific_param.m_encoder.m_total_tile_parts <= 255) {
         size_per_tile_part = 5;
@@ -4299,8 +4293,34 @@ static OPJ_BOOL opj_j2k_write_tlm(opj_j2k_t *p_j2k,
         p_j2k->m_specific_param.m_encoder.m_Ttlmi_is_byte = OPJ_FALSE;
     }
 
-    l_tlm_size = 2 + 4 + (size_per_tile_part *
-                          p_j2k->m_specific_param.m_encoder.m_total_tile_parts);
+    /* A TLM marker segment is made of a 6 byte header (TLM, Ltlm, Ztlm and */
+    /* Stlm fields) followed by size_per_tile_part bytes per tile-part. */
+    /* Ltlm being a 16 bit value (whose maximum is 65535, and which includes */
+    /* its own 2 bytes plus the Ztlm and Stlm bytes), a single TLM marker */
+    /* segment can hold at most (65535 - 4) / size_per_tile_part entries. */
+    /* When more tile-parts are needed, several TLM marker segments (with */
+    /* increasing Ztlm values) are emitted, as allowed by the JPEG 2000 */
+    /* specification. */
+    l_max_tile_parts_per_tlm = (65535 - 4) / size_per_tile_part;
+
+    /* Ztlm being a 8 bit value, at most 256 TLM marker segments can be */
+    /* emitted. */
+    if (p_j2k->m_specific_param.m_encoder.m_total_tile_parts >
+            256 * l_max_tile_parts_per_tlm) {
+        opj_event_msg(p_manager, EVT_ERROR,
+                      "A maximum of %u tile-parts are supported "
+                      "when writing TLM markers\n",
+                      256 * l_max_tile_parts_per_tlm);
+        return OPJ_FALSE;
+    }
+
+    l_num_tlm_markers =
+        (p_j2k->m_specific_param.m_encoder.m_total_tile_parts +
+         l_max_tile_parts_per_tlm - 1) / l_max_tile_parts_per_tlm;
+
+    l_tlm_size = 6 * l_num_tlm_markers +
+                 (size_per_tile_part *
+                  p_j2k->m_specific_param.m_encoder.m_total_tile_parts);
 
     if (l_tlm_size > p_j2k->m_specific_param.m_encoder.m_header_tile_data_size) {
         OPJ_BYTE *new_header_tile_data = (OPJ_BYTE *) opj_realloc(
@@ -4323,26 +4343,39 @@ static OPJ_BOOL opj_j2k_write_tlm(opj_j2k_t *p_j2k,
     /* TODO */
     p_j2k->m_specific_param.m_encoder.m_tlm_start = opj_stream_tell(p_stream);
 
-    opj_write_bytes(l_current_data, J2K_MS_TLM,
-                    2);                                   /* TLM */
-    l_current_data += 2;
-
-    opj_write_bytes(l_current_data, l_tlm_size - 2,
-                    2);                                 /* Lpoc */
-    l_current_data += 2;
-
-    opj_write_bytes(l_current_data, 0,
-                    1);                                                    /* Ztlm=0*/
-    ++l_current_data;
-
     /* Stlm 0x50= ST=1(8bits-255 tiles max),SP=1(Ptlm=32bits) */
     /* Stlm 0x60= ST=2(16bits-65535 tiles max),SP=1(Ptlm=32bits) */
-    opj_write_bytes(l_current_data,
-                    size_per_tile_part == 5 ? 0x50 : 0x60,
-                    1);
-    ++l_current_data;
+    l_num_tile_parts_left =
+        p_j2k->m_specific_param.m_encoder.m_total_tile_parts;
+    for (i = 0; i < l_num_tlm_markers; ++i) {
+        OPJ_UINT32 l_num_tile_parts_this_tlm = opj_uint_min(
+                l_num_tile_parts_left, l_max_tile_parts_per_tlm);
 
-    /* do nothing on the size_per_tile_part * l_j2k->m_specific_param.m_encoder.m_total_tile_parts remaining data */
+        opj_write_bytes(l_current_data, J2K_MS_TLM,
+                        2);                                   /* TLM */
+        l_current_data += 2;
+
+        opj_write_bytes(l_current_data,
+                        4 + size_per_tile_part * l_num_tile_parts_this_tlm,
+                        2);                                 /* Ltlm */
+        l_current_data += 2;
+
+        opj_write_bytes(l_current_data, i,
+                        1);                                 /* Ztlm */
+        ++l_current_data;
+
+        opj_write_bytes(l_current_data,
+                        size_per_tile_part == 5 ? 0x50 : 0x60,
+                        1);                                 /* Stlm */
+        ++l_current_data;
+
+        /* leave the size_per_tile_part * l_num_tile_parts_this_tlm bytes */
+        /* of the entries of this segment zeroed. They are filled at the */
+        /* end of the compression by opj_j2k_write_updated_tlm() */
+        l_current_data += size_per_tile_part * l_num_tile_parts_this_tlm;
+
+        l_num_tile_parts_left -= l_num_tile_parts_this_tlm;
+    }
     if (opj_stream_write_data(p_stream,
                               p_j2k->m_specific_param.m_encoder.m_header_tile_data, l_tlm_size,
                               p_manager) != l_tlm_size) {
@@ -13383,9 +13416,11 @@ static OPJ_BOOL opj_j2k_write_updated_tlm(opj_j2k_t *p_j2k,
         struct opj_stream_private *p_stream,
         struct opj_event_mgr * p_manager)
 {
-    OPJ_UINT32 l_tlm_size;
-    OPJ_OFF_T l_tlm_position, l_current_position;
     OPJ_UINT32 size_per_tile_part;
+    OPJ_UINT32 l_max_tile_parts_per_tlm;
+    OPJ_UINT32 l_num_tile_parts_left;
+    OPJ_OFF_T l_tlm_position, l_current_position;
+    const OPJ_BYTE * l_buffer;
 
     /* preconditions */
     assert(p_j2k != 00);
@@ -13393,19 +13428,37 @@ static OPJ_BOOL opj_j2k_write_updated_tlm(opj_j2k_t *p_j2k,
     assert(p_stream != 00);
 
     size_per_tile_part = p_j2k->m_specific_param.m_encoder.m_Ttlmi_is_byte ? 5 : 6;
-    l_tlm_size = size_per_tile_part *
-                 p_j2k->m_specific_param.m_encoder.m_total_tile_parts;
-    l_tlm_position = 6 + p_j2k->m_specific_param.m_encoder.m_tlm_start;
+
+    /* Must be kept in sync with opj_j2k_write_tlm(): when the tile-part */
+    /* entries do not fit in a single TLM marker segment, several segments */
+    /* (each with its own 6 byte header) are emitted. */
+    l_max_tile_parts_per_tlm = (65535 - 4) / size_per_tile_part;
+
+    l_tlm_position = p_j2k->m_specific_param.m_encoder.m_tlm_start;
     l_current_position = opj_stream_tell(p_stream);
 
-    if (! opj_stream_seek(p_stream, l_tlm_position, p_manager)) {
-        return OPJ_FALSE;
-    }
+    l_buffer = p_j2k->m_specific_param.m_encoder.m_tlm_sot_offsets_buffer;
+    l_num_tile_parts_left =
+        p_j2k->m_specific_param.m_encoder.m_total_tile_parts;
 
-    if (opj_stream_write_data(p_stream,
-                              p_j2k->m_specific_param.m_encoder.m_tlm_sot_offsets_buffer, l_tlm_size,
-                              p_manager) != l_tlm_size) {
-        return OPJ_FALSE;
+    while (l_num_tile_parts_left > 0) {
+        OPJ_UINT32 l_num_tile_parts_this_tlm = opj_uint_min(
+                l_num_tile_parts_left, l_max_tile_parts_per_tlm);
+        OPJ_UINT32 l_tlm_size = size_per_tile_part * l_num_tile_parts_this_tlm;
+
+        /* skip the 6 byte header of the TLM marker segment */
+        if (! opj_stream_seek(p_stream, l_tlm_position + 6, p_manager)) {
+            return OPJ_FALSE;
+        }
+
+        if (opj_stream_write_data(p_stream, l_buffer, l_tlm_size,
+                                  p_manager) != l_tlm_size) {
+            return OPJ_FALSE;
+        }
+
+        l_buffer += l_tlm_size;
+        l_num_tile_parts_left -= l_num_tile_parts_this_tlm;
+        l_tlm_position += 6 + l_tlm_size;
     }
 
     if (! opj_stream_seek(p_stream, l_current_position, p_manager)) {
