@@ -155,6 +155,8 @@ typedef struct opj_decompress_params {
     int quiet;
     /* Allow partial decode */
     int allow_partial;
+    /* Skip per-packet SOP marker verification (sequential codestreams only) */
+    int skip_sop_verification;
     /** number of components to decode */
     OPJ_UINT32 numcomps;
     /** indices of components to decode */
@@ -250,6 +252,14 @@ static void decode_help_display(void)
     }
     fprintf(stdout, "  -allow-partial\n"
             "    Disable strict mode to allow decoding partial codestreams.\n");
+    fprintf(stdout, "  -skip-sop-verification\n"
+            "    Skip per-packet SOP marker verification and derive packet\n"
+            "    boundaries from the decoder's internal packet counter instead.\n"
+            "    Only safe for strictly sequential codestreams without tile-part\n"
+            "    interleaving (the decoder falls back to full verification if a\n"
+            "    tile split over several tile-parts is met). Do NOT use on\n"
+            "    unreliable codestreams where SOP markers are needed as error\n"
+            "    recovery anchors.\n");
     fprintf(stdout, "  -quiet\n"
             "    Disable output from the library and other output.\n");
     /* UniPG>> */
@@ -606,6 +616,7 @@ int parse_cmdline_decoder(int argc, char **argv,
         {"threads",   REQ_ARG, NULL, 'T'},
         {"quiet", NO_ARG,  NULL, 1},
         {"allow-partial", NO_ARG,  NULL, 1},
+        {"skip-sop-verification", NO_ARG,  NULL, 1},
     };
 
     const char optlist[] = "i:o:r:l:x:d:t:p:c:"
@@ -622,6 +633,7 @@ int parse_cmdline_decoder(int argc, char **argv,
     long_option[4].flag = &(parameters->split_pnm);
     long_option[6].flag = &(parameters->quiet);
     long_option[7].flag = &(parameters->allow_partial);
+    long_option[8].flag = &(parameters->skip_sop_verification);
     totlen = sizeof(long_option);
     opj_reset_options_reading();
     img_fol->set_out_format = 0;
@@ -1368,6 +1380,9 @@ int main(int argc, char **argv)
     }
 
     cp_reduce = parameters.core.cp_reduce;
+    if (parameters.skip_sop_verification) {
+        parameters.core.flags |= OPJ_DPARAMETERS_SKIP_SOP_VERIFICATION_FLAG;
+    }
     if (getenv("USE_OPJ_SET_DECODED_RESOLUTION_FACTOR") != NULL) {
         /* For debugging/testing purposes, do not set the cp_reduce member */
         /* if USE_OPJ_SET_DECODED_RESOLUTION_FACTOR is defined, but used */

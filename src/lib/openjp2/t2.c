@@ -430,6 +430,9 @@ OPJ_BOOL opj_t2_decode_packets(opj_tcd_t* tcd,
         return OPJ_FALSE;
     }
 
+    /* Internal packet counter: replaces the Nsop value carried by SOP
+     * markers when the SOP verification fast path is active. */
+    p_t2->packet_count = 0;
 
     l_current_pi = l_pi;
 
@@ -534,6 +537,8 @@ OPJ_BOOL opj_t2_decode_packets(opj_tcd_t* tcd,
                         p_tile->comps[l_current_pi->compno].minimum_num_resolutions - 1;
                 }
             }
+
+            ++p_t2->packet_count;
 
             l_current_data += l_nb_bytes_read;
             p_max_len -= l_nb_bytes_read;
@@ -1111,17 +1116,28 @@ static OPJ_BOOL opj_t2_read_packet_header(opj_t2_t* p_t2,
     /* SOP markers */
 
     if (p_tcp->csty & J2K_CP_CSTY_SOP) {
-        /* SOP markers are allowed (i.e. optional), just warn */
-        if (p_max_length < 6) {
-            opj_event_msg(p_manager, EVT_WARNING,
-                          "Not enough space for expected SOP marker\n");
-        } else if ((*l_current_data) != 0xff || (*(l_current_data + 1) != 0x91)) {
-            opj_event_msg(p_manager, EVT_WARNING, "Expected SOP marker\n");
+        if (p_t2->skip_sop_verification) {
+            /* Fast path: the codestream is strictly sequential with a single
+             * tile-part per tile, so packet boundaries are fully determined
+             * by the internal packet iterator (p_t2->packet_count replaces
+             * the Nsop value). Skip the SOP marker without verifying its
+             * bytes. */
+            if (p_max_length >= 6) {
+                l_current_data += 6;
+            }
         } else {
-            l_current_data += 6;
-        }
+            /* SOP markers are allowed (i.e. optional), just warn */
+            if (p_max_length < 6) {
+                opj_event_msg(p_manager, EVT_WARNING,
+                              "Not enough space for expected SOP marker\n");
+            } else if ((*l_current_data) != 0xff || (*(l_current_data + 1) != 0x91)) {
+                opj_event_msg(p_manager, EVT_WARNING, "Expected SOP marker\n");
+            } else {
+                l_current_data += 6;
+            }
 
-        /** TODO : check the Nsop value */
+            /** TODO : check the Nsop value */
+        }
     }
 
     /*

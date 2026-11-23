@@ -288,6 +288,9 @@ typedef struct opj_tcd {
     OPJ_BOOL   whole_tile_decoding;
     /* Array of size image->numcomps indicating if a component must be decoded. NULL if all components must be decoded */
     OPJ_BOOL* used_component;
+    /** Only valid for decoding. When set, per-packet SOP marker verification
+     *  is skipped (sequential codestream, single tile-part per tile). */
+    OPJ_BOOL   skip_sop_verification;
 } opj_tcd_t;
 
 /**

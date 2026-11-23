@@ -536,6 +536,11 @@ typedef struct opj_j2k_dec {
     /** TNsot correction : see issue 254 **/
     OPJ_BITFIELD m_nb_tile_parts_correction_checked : 1;
     OPJ_BITFIELD m_nb_tile_parts_correction : 1;
+    /** Whether per-packet SOP marker verification may be skipped.
+     *  Set from OPJ_DPARAMETERS_SKIP_SOP_VERIFICATION_FLAG, and cleared as
+     *  soon as a tile split over several tile-parts is met (tile-part
+     *  interleaving makes SOP markers resynchronization anchors again). */
+    OPJ_BITFIELD m_skip_sop_verification : 1;
 
 } opj_j2k_dec_t;
 

@@ -57,6 +57,14 @@ typedef struct opj_t2 {
     opj_image_t *image;
     /** pointer to the image coding parameters */
     opj_cp_t *cp;
+    /** Decoding: when set, per-packet SOP marker verification is skipped and
+     *  packet boundaries are derived from the internal packet iterator only.
+     *  Only valid for strictly sequential codestreams with a single
+     *  tile-part per tile. */
+    OPJ_BOOL skip_sop_verification;
+    /** Decoding: internal packet counter. Replaces the Nsop value carried by
+     *  SOP markers when skip_sop_verification is set. */
+    OPJ_UINT32 packet_count;
 } opj_t2_t;
 
 /** @name Exported functions */

@@ -2020,6 +2020,7 @@ static OPJ_BOOL opj_tcd_t2_decode(opj_tcd_t *p_tcd,
     if (l_t2 == 00) {
         return OPJ_FALSE;
     }
+    l_t2->skip_sop_verification = p_tcd->skip_sop_verification;
 
     if (! opj_t2_decode_packets(
                 p_tcd,

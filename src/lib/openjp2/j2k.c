@@ -4468,6 +4468,20 @@ static OPJ_BOOL opj_j2k_read_sot(opj_j2k_t *p_j2k,
             p_j2k->m_current_tile_number, l_tot_len, l_current_part, l_num_parts);
 #endif
 
+    if (l_current_part != 0 &&
+            p_j2k->m_specific_param.m_decoder.m_skip_sop_verification) {
+        /* The SOP verification fast path is only valid for strictly
+         * sequential codestreams with a single tile-part per tile. This tile
+         * is split over several tile-parts, so SOP markers are needed again
+         * as resynchronization anchors: fall back to full verification for
+         * the rest of the decode. */
+        p_j2k->m_specific_param.m_decoder.m_skip_sop_verification = 0;
+        opj_event_msg(p_manager, EVT_INFO,
+                      "Tile-part interleaving detected (tile %u, tile-part %u): "
+                      "re-enabling SOP marker verification.\n",
+                      p_j2k->m_current_tile_number, l_current_part);
+    }
+
     l_cp = &(p_j2k->m_cp);
 
     /* testcase 2.pdf.SIGFPE.706.1112 */
@@ -6756,6 +6770,8 @@ void opj_j2k_setup_decoder(opj_j2k_t *j2k, opj_dparameters_t *parameters)
         j2k->m_cp.m_specific_param.m_dec.m_reduce = parameters->cp_reduce;
 
         j2k->dump_state = (parameters->flags & OPJ_DPARAMETERS_DUMP_FLAG);
+        j2k->m_specific_param.m_decoder.m_skip_sop_verification =
+            (parameters->flags & OPJ_DPARAMETERS_SKIP_SOP_VERIFICATION_FLAG) != 0;
 #ifdef USE_JPWL
         j2k->m_cp.correct = parameters->jpwl_correct;
         j2k->m_cp.exp_comps = parameters->jpwl_exp_comps;
@@ -10147,6 +10163,8 @@ OPJ_BOOL opj_j2k_decode_tile(opj_j2k_t * p_j2k,
     /* but full tile decoding is done */
     l_image_for_bounds = p_j2k->m_output_image ? p_j2k->m_output_image :
                          p_j2k->m_private_image;
+    p_j2k->m_tcd->skip_sop_verification =
+        p_j2k->m_specific_param.m_decoder.m_skip_sop_verification;
     if (! opj_tcd_decode_tile(p_j2k->m_tcd,
                               l_image_for_bounds->x0,
                               l_image_for_bounds->y0,

@@ -547,6 +547,12 @@ typedef struct opj_cparameters {
 
 #define OPJ_DPARAMETERS_IGNORE_PCLR_CMAP_CDEF_FLAG  0x0001
 #define OPJ_DPARAMETERS_DUMP_FLAG                   0x0002
+/** Skip per-packet SOP marker verification when decoding. Only valid for
+ *  strictly sequential codestreams with a single tile-part per tile: the
+ *  decoder falls back to full SOP verification as soon as a tile split over
+ *  several tile-parts is met. Do NOT use on unreliable (e.g. network
+ *  transported) codestreams where SOP markers are error recovery anchors. */
+#define OPJ_DPARAMETERS_SKIP_SOP_VERIFICATION_FLAG  0x0004
 
 /**
  * Decompression parameters
