@@ -9158,6 +9158,14 @@ static OPJ_BOOL opj_j2k_read_header_procedure(opj_j2k_t *p_j2k,
     /* Next step: read a tile-part header */
     p_j2k->m_specific_param.m_decoder.m_state = J2K_STATE_TPHSOT;
 
+    /* The main header is fully parsed and the codec is not yet shared with
+     * worker threads at this point of the API contract, so create the
+     * tile-concurrency runtime now. Failures leave a NULL runtime and the
+     * decoder keeps working sequentially. */
+    if (!p_j2k->m_is_tile_worker && p_j2k->m_tile_concurrency == NULL) {
+        p_j2k->m_tile_concurrency = opj_tc_create(p_j2k);
+    }
+
     return OPJ_TRUE;
 }
 
@@ -9358,6 +9366,14 @@ void opj_j2k_destroy(opj_j2k_t *p_j2k)
 {
     if (p_j2k == 00) {
         return;
+    }
+
+    /* Parent decoders own the tile-concurrency runtime (which in turn owns
+     * child j2k handles); tear it down before freeing any shared parent
+     * structure. Child workers always have a NULL m_tile_concurrency. */
+    if (p_j2k->m_tile_concurrency) {
+        opj_tc_destroy(p_j2k->m_tile_concurrency);
+        p_j2k->m_tile_concurrency = NULL;
     }
 
     if (p_j2k->m_is_decoder) {
@@ -12456,6 +12472,14 @@ OPJ_BOOL opj_j2k_get_tile(opj_j2k_t *p_j2k,
     if (!p_image) {
         opj_event_msg(p_manager, EVT_ERROR, "We need an image previously created.\n");
         return OPJ_FALSE;
+    }
+
+    /* Parent decoder: hand the request to the tile-concurrency runtime, which
+     * runs the decode on a private child codec. Child codecs fall through to
+     * the regular sequential implementation below. */
+    if (!p_j2k->m_is_tile_worker && p_j2k->m_tile_concurrency) {
+        return opj_tc_get_decoded_tile(p_j2k->m_tile_concurrency, p_stream,
+                                       p_image, p_manager, tile_index);
     }
 
     if (p_image->numcomps < p_j2k->m_private_image->numcomps) {

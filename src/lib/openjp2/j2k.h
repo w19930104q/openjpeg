@@ -597,6 +597,21 @@ typedef struct opj_j2k_enc {
 
 
 struct opj_tcd;
+
+/**
+ * Per-worker runtime context used to decode a tile concurrently with other
+ * threads on the same parent codec. Defined in j2k_tile_concurrency.c.
+ */
+struct opj_tile_worker;
+typedef struct opj_tile_worker opj_tile_worker_t;
+
+/**
+ * Registry of tile workers and tile-level locks, attached to a decoder once
+ * its main header has been read. Defined in j2k_tile_concurrency.c.
+ */
+struct opj_tile_concurrency;
+typedef struct opj_tile_concurrency opj_tile_concurrency_t;
+
 /**
 JPEG-2000 codestream reader/writer
 */
@@ -646,6 +661,18 @@ typedef struct opj_j2k {
 
     /** Set to 1 by the decoder initialization if OPJ_DPARAMETERS_DUMP_FLAG is set */
     unsigned int dump_state;
+
+    /**
+     * Tile-concurrency runtime, lazily created on the first concurrent
+     * opj_j2k_get_tile() call and destroyed in opj_j2k_destroy(). NULL for
+     * encoders and purely sequential decoders.
+     */
+    opj_tile_concurrency_t* m_tile_concurrency;
+
+    /** TRUE for child decoders owned by the tile-concurrency runtime: their
+     *  opj_j2k_get_tile() calls run directly instead of re-entering the
+     *  concurrent dispatch. */
+    OPJ_BOOL m_is_tile_worker;
 }
 opj_j2k_t;
 
@@ -950,5 +977,24 @@ OPJ_BOOL opj_j2k_end_compress(opj_j2k_t *p_j2k,
 
 OPJ_BOOL opj_j2k_setup_mct_encoding(opj_tcp_t * p_tcp, opj_image_t * p_image);
 
+/* ----------------------------------------------------------------------- */
+/* Tile-level concurrency (j2k_tile_concurrency.c)                         */
+/* ----------------------------------------------------------------------- */
+
+/** Create the tile-concurrency runtime for a decoder whose main header has
+ *  already been read. Returns NULL on failure or when it is not applicable. */
+opj_tile_concurrency_t *opj_tc_create(opj_j2k_t *parent);
+
+/** Destroy a tile-concurrency runtime created by opj_tc_create(). */
+void opj_tc_destroy(opj_tile_concurrency_t *tc);
+
+/** Concurrent counterpart of opj_j2k_get_tile(): same tile indices are
+ *  serialized, distinct tile indices decode in parallel; calls sharing one
+ *  stream are serialized because of its seek/read cursor. */
+OPJ_BOOL opj_tc_get_decoded_tile(opj_tile_concurrency_t *tc,
+                                 opj_stream_private_t *p_stream,
+                                 opj_image_t *p_image,
+                                 opj_event_mgr_t *p_manager,
+                                 OPJ_UINT32 tile_index);
 
 #endif /* OPJ_J2K_H */
