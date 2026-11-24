@@ -461,6 +461,7 @@ void opj_mqc_raw_init_dec(opj_mqc_t *mqc, OPJ_BYTE *bp, OPJ_UINT32 len,
     opj_mqc_init_dec_common(mqc, bp, len, extra_writable_bytes);
     mqc->c = 0;
     mqc->ct = 0;
+    mqc->end_of_byte_stream_counter = 0;
 }
 
 

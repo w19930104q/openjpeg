@@ -2044,7 +2044,11 @@ static OPJ_BOOL opj_t1_decode_cblk(opj_t1_t *t1,
     opj_mqc_setstate(mqc, T1_CTXNO_ZC, 0, 4);
 
     if (cblk->corrupted) {
-        assert(cblk->numchunks == 0);
+        /* The code-block was flagged as corrupted, either by the T2 */
+        /* (truncated/partial packet data, in which case numchunks == 0), */
+        /* or by a previous T1 decoding pass that detected that the */
+        /* code-block data was exhausted before all passes could be */
+        /* decoded (in which case numchunks may be non-zero). */
         return OPJ_TRUE;
     }
 
@@ -2114,6 +2118,31 @@ static OPJ_BOOL opj_t1_decode_cblk(opj_t1_t *t1,
 
         for (passno = 0; (passno < seg->real_num_passes) &&
                 (bpno_plus_one >= 1); ++passno) {
+            /* The MQ decoder may legitimately read up to 2 bytes beyond */
+            /* the end of the code-block data (read-ahead of its bit */
+            /* buffer, e.g. when trailing passes decode zero symbols), */
+            /* so use the same tolerance as the PTERM check below. */
+            /* Beyond that, the decoder is decoding from synthesized */
+            /* bits (corrupted/truncated codestream). Mark the */
+            /* code-block as corrupted and stop decoding it: the */
+            /* coefficients that have not been decoded yet remain */
+            /* zeroed, so the affected area degrades to a gray/blurry */
+            /* block instead of garbage, and decoding of the */
+            /* following code-blocks proceeds normally. */
+            if (mqc->end_of_byte_stream_counter > 2) {
+                if (p_manager_mutex) {
+                    opj_mutex_lock(p_manager_mutex);
+                }
+                opj_event_msg(p_manager, EVT_WARNING,
+                              "opj_t1_decode_cblk(): code-block data exhausted "
+                              "before all passes could be decoded. "
+                              "Code-block is corrupted.\n");
+                if (p_manager_mutex) {
+                    opj_mutex_unlock(p_manager_mutex);
+                }
+                cblk->corrupted = OPJ_TRUE;
+                break;
+            }
             switch (passtype) {
             case 0:
                 if (type == T1_TYPE_RAW) {
@@ -2147,6 +2176,12 @@ static OPJ_BOOL opj_t1_decode_cblk(opj_t1_t *t1,
         }
 
         opq_mqc_finish_dec(mqc);
+
+        if (cblk->corrupted) {
+            /* Stop decoding the remaining segments of this corrupted */
+            /* code-block. */
+            break;
+        }
     }
 
     if (check_pterm) {

@@ -75,9 +75,16 @@ static INLINE OPJ_UINT32 opj_mqc_raw_decode(opj_mqc_t *mqc)
 {
     OPJ_UINT32 d;
     if (mqc->ct == 0) {
-        /* Given opj_mqc_raw_init_dec() we know that at some point we will */
-        /* have a 0xFF 0xFF artificial marker */
-        if (mqc->c == 0xff) {
+        /* Bounds check: never read past mqc->end. If the decoder needs */
+        /* more bytes than available in the code-block data */
+        /* (corrupted/truncated codestream), synthesize 0xFF bytes and */
+        /* record the overflow, so that callers can detect that the */
+        /* code-block is corrupted and degrade gracefully. */
+        if (mqc->bp >= mqc->end) {
+            mqc->c = 0xff;
+            mqc->ct = 8;
+            mqc->end_of_byte_stream_counter ++;
+        } else if (mqc->c == 0xff) {
             if (*mqc->bp  > 0x8f) {
                 mqc->c = 0xff;
                 mqc->ct = 8;
@@ -102,23 +109,39 @@ static INLINE OPJ_UINT32 opj_mqc_raw_decode(opj_mqc_t *mqc)
 #define opj_mqc_bytein_macro(mqc, c, ct) \
 { \
         OPJ_UINT32 l_c;  \
-        /* Given opj_mqc_init_dec() we know that at some point we will */ \
-        /* have a 0xFF 0xFF artificial marker */ \
-        l_c = *(mqc->bp + 1); \
-        if (*mqc->bp == 0xff) { \
-            if (l_c > 0x8f) { \
-                c += 0xff00; \
-                ct = 8; \
-                mqc->end_of_byte_stream_counter ++; \
+        if (mqc->bp >= mqc->end) { \
+            /* Bounds check: the decoder is trying to read beyond the */ \
+            /* end of the code-block data (corrupted/truncated */ \
+            /* codestream). Synthesize a 0xFF 0xFF terminating marker */ \
+            /* without reading out-of-bounds, and record the overflow */ \
+            /* so that callers can detect that the code-block is */ \
+            /* corrupted and degrade gracefully. */ \
+            c += 0xff00; \
+            ct = 8; \
+            mqc->end_of_byte_stream_counter ++; \
+        } else { \
+            /* Do not read past mqc->end either: bytes beyond the */ \
+            /* code-block data are synthesized as 0xFF, which is */ \
+            /* identical to the artificial terminating marker that */ \
+            /* opj_mqc_init_dec_common() inserts when the buffer has */ \
+            /* OPJ_COMMON_CBLK_DATA_EXTRA extra writable bytes. */ \
+            l_c = (mqc->bp + 1 < mqc->end) ? (OPJ_UINT32) * (mqc->bp + 1) : \
+                  0xffU; \
+            if (*mqc->bp == 0xff) { \
+                if (l_c > 0x8f) { \
+                    c += 0xff00; \
+                    ct = 8; \
+                    mqc->end_of_byte_stream_counter ++; \
+                } else { \
+                    mqc->bp++; \
+                    c += l_c << 9; \
+                    ct = 7; \
+                } \
             } else { \
                 mqc->bp++; \
-                c += l_c << 9; \
-                ct = 7; \
+                c += l_c << 8; \
+                ct = 8; \
             } \
-        } else { \
-            mqc->bp++; \
-            c += l_c << 8; \
-            ct = 8; \
         } \
 }
 
